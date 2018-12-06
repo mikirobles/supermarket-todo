@@ -7,10 +7,10 @@ import AddItem from "./components/AddItem";
 class App extends Component {
   constructor () {
     super();
+    this.fetchQueue = [];
     this.addItemButton = React.createRef();
     this.state = {
       isEditing: false,
-      isFetching: false,
       error: null,
       items: [],
     };
@@ -50,50 +50,50 @@ class App extends Component {
       this.setState({
         items: [...items, newItem],
         isEditing: false,
-        isFetching: true,
       });
+      this.fetchQueue.push('add item');
       const newItems = await api.addItem(newItem);
-      this.setState({
-        items: newItems,
-      });
+      if (this.fetchQueue.length === 1) {
+        this.setState({
+          items: newItems,
+        });
+      }
     } catch (e) {
       console.error(e);
       this.setState({
         items,
       });
     }
-    this.setState({
-      isFetching: false,
-    });
+    this.fetchQueue.pop();
   };
 
   removeItem = async item => {
-    const {items, isFetching} = this.state;
-    if (typeof item.id === "undefined" || isFetching) {
+    const {items} = this.state;
+    if (typeof item.id === "undefined") {
       return;
     }
     try {
       this.setState({
-        items: [...items].filter(({id}) => id !== item.id),
-        isFetching: true,
+        items: [...items].filter(({id}) => id !== item.id)
       });
+      this.fetchQueue.push('remove item');
       const newItems = await api.removeItem(item);
-      this.setState({
-        items: newItems,
-      });
+      if (this.fetchQueue.length === 1) {
+        this.setState({
+          items: newItems,
+        });
+      }
     } catch (e) {
       console.error(e);
       this.setState({
         items,
       });
     }
-    this.setState({
-      isFetching: false,
-    });
+    this.fetchQueue.pop()
   };
 
   render () {
-    const {items, error, isEditing, isFetching} = this.state;
+    const {items, error, isEditing} = this.state;
     return (
       <div className="App">
         <div className="container">
@@ -106,7 +106,7 @@ class App extends Component {
               <ListItem
                 key={id || name + index}
                 label={name}
-                disabled={isFetching || typeof id === "undefined"}
+                disabled={typeof id === "undefined"}
                 onDelete={() => this.removeItem({name, id})}
               />
             ))}
