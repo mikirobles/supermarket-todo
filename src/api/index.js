@@ -14,7 +14,8 @@ let idCount;
 
 const getIdCount = (items) => {
   if (items.length > 0) {
-    return items.reduce((acc, cur) => Math.max(acc.id, cur.id)) + 1;
+    const ids = items.map(({id}) => id);
+    return Math.max(...ids) + 1;
   } else {
     return 0;
   }
@@ -43,9 +44,10 @@ const api = {
   },
   addItem: async function ({name}) {
     await wait(responseDelay);
+    idCount += 1;
     items.push({
       name,
-      id: idCount++,
+      id: idCount,
     });
     this.persistItems();
     return items;
