@@ -65,3 +65,7 @@ button {
 .btn.secondary {
   border: 1px solid darkgray;
 }
+
+.btn:disabled {
+  cursor: not-allowed;
+}

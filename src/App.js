@@ -5,119 +5,133 @@ import ListItem from "./components/ListItem";
 import AddItem from "./components/AddItem";
 
 class App extends Component {
-  constructor () {
+  constructor() {
     super();
     this.fetchQueue = [];
     this.addItemButton = React.createRef();
     this.state = {
       isEditing: false,
+      initialLoad: false,
       error: null,
-      items: [],
+      items: []
     };
   }
 
-  componentWillMount () {
+  componentWillMount() {
     this.fetchItems();
   }
 
-  componentDidMount () {
+  componentDidMount() {
     this.addItemButton.current.focus();
   }
 
   fetchItems = async () => {
     try {
+      this.setState({
+        initialLoad: true
+      });
       const items = await api.fetchItems();
       this.setState({
-        items,
+        items
       });
     } catch (e) {
       console.error(e);
       this.setState({
-        error: "An error has occurred while fetching the items.",
+        error: "An error has occurred while fetching the items."
       });
     }
+    this.setState({
+      initialLoad: false
+    });
   };
 
   switchModal = () => {
-    this.setState(({isEditing}) => ({
-      isEditing: !isEditing,
+    this.setState(({ isEditing }) => ({
+      isEditing: !isEditing
     }));
   };
 
   addItem = async newItem => {
-    const {items} = this.state;
+    const { items } = this.state;
     try {
       this.setState({
         items: [...items, newItem],
-        isEditing: false,
+        isEditing: false
       });
-      this.fetchQueue.push('add item');
+      this.fetchQueue.push("add item");
       const newItems = await api.addItem(newItem);
       if (this.fetchQueue.length === 1) {
         this.setState({
-          items: newItems,
+          items: newItems
         });
       }
     } catch (e) {
       console.error(e);
       this.setState({
-        items,
+        items
       });
     }
     this.fetchQueue.pop();
   };
 
   removeItem = async item => {
-    const {items} = this.state;
+    const { items } = this.state;
     if (typeof item.id === "undefined") {
       return;
     }
     try {
       this.setState({
-        items: [...items].filter(({id}) => id !== item.id)
+        items: [...items].filter(({ id }) => id !== item.id)
       });
-      this.fetchQueue.push('remove item');
+      this.fetchQueue.push("remove item");
       const newItems = await api.removeItem(item);
       if (this.fetchQueue.length === 1) {
         this.setState({
-          items: newItems,
+          items: newItems
         });
       }
     } catch (e) {
       console.error(e);
       this.setState({
-        items,
+        items
       });
     }
-    this.fetchQueue.pop()
+    this.fetchQueue.pop();
   };
 
-  render () {
-    const {items, error, isEditing} = this.state;
+  render() {
+    const { items, error, isEditing, initialLoad } = this.state;
     return (
       <div className="App">
         <div className="container">
           <h1>Supermarket List</h1>
           {items.length ? (
             <span className={"item-count"}>{items.length} items</span>
-          ) : <span className={"item-count"}>List is empty</span>}
+          ) : initialLoad ? (
+            <span className={"item-count"}>Loading...</span>
+          ) : (
+            <span className={"item-count"}>List is empty</span>
+          )}
           <ul className={"list"}>
-            {items.map(({name, id}, index) => (
+            {items.map(({ name, id }, index) => (
               <ListItem
                 key={id || name + index}
                 label={name}
                 disabled={typeof id === "undefined"}
-                onDelete={() => this.removeItem({name, id})}
+                onDelete={() => this.removeItem({ name, id })}
               />
             ))}
           </ul>
-          <button ref={this.addItemButton} onClick={this.switchModal}
-                  className={"btn primary add-item"}>
+          <button
+            ref={this.addItemButton}
+            onClick={this.switchModal}
+            className={"btn primary add-item"}
+          >
             Add item
           </button>
           {error && <strong>{error}</strong>}
           {isEditing && (
-            <AddItem onCancel={this.switchModal} onSubmit={this.addItem}/>
+            <AddItem onCancel={this.switchModal} onSubmit={this.addItem} />
           )}
         </div>
       </div>
