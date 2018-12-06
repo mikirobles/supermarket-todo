@@ -1,17 +1,125 @@
-import React, { Component } from 'react';
-import './App.css';
-import ListItem from './components/ListItem';
+import React, { Component } from "react";
+import api from "./api";
+import "./App.css";
+import ListItem from "./components/ListItem";
+import AddItem from "./components/AddItem";
 
 class App extends Component {
-  render() {
+  constructor () {
+    super();
+    this.addItemButton = React.createRef();
+    this.state = {
+      isEditing: false,
+      isFetching: false,
+      error: null,
+      items: [],
+    };
+  }
+
+  componentWillMount () {
+    this.fetchItems();
+  }
+
+  componentDidMount () {
+    this.addItemButton.current.focus();
+  }
+
+  fetchItems = async () => {
+    try {
+      const items = await api.fetchItems();
+      this.setState({
+        items,
+      });
+    } catch (e) {
+      console.error(e);
+      this.setState({
+        error: "An error has occurred while fetching the items.",
+      });
+    }
+  };
+
+  switchModal = () => {
+    this.setState(({isEditing}) => ({
+      isEditing: !isEditing,
+    }));
+  };
+
+  addItem = async newItem => {
+    const {items} = this.state;
+    try {
+      this.setState({
+        items: [...items, newItem],
+        isEditing: false,
+        isFetching: true,
+      });
+      const newItems = await api.addItem(newItem);
+      this.setState({
+        items: newItems,
+      });
+    } catch (e) {
+      console.error(e);
+      this.setState({
+        items,
+      });
+    }
+    this.setState({
+      isFetching: false,
+    });
+  };
+
+  removeItem = async item => {
+    const {items, isFetching} = this.state;
+    if (typeof item.id === "undefined" || isFetching) {
+      return;
+    }
+    try {
+      this.setState({
+        items: [...items].filter(({id}) => id !== item.id),
+        isFetching: true,
+      });
+      const newItems = await api.removeItem(item);
+      this.setState({
+        items: newItems,
+      });
+    } catch (e) {
+      console.error(e);
+      this.setState({
+        items,
+      });
+    }
+    this.setState({
+      isFetching: false,
+    });
+  };
+
+  render () {
+    const {items, error, isEditing, isFetching} = this.state;
     return (
       <div className="App">
-        <h1>Supermarket List</h1>
-        <span className={'item-count'}>3 ITEMS</span>
-        <ul className={'list'}>
-            <ListItem label={'Milk'}/>
-            <ListItem label={'Eggs'}/>
-        </ul>
+        <div className="container">
+          <h1>Supermarket List</h1>
+          {items.length ? (
+            <span className={"item-count"}>{items.length} items</span>
+          ) : <span className={"item-count"}>List is empty</span>}
+          <ul className={"list"}>
+            {items.map(({name, id}, index) => (
+              <ListItem
+                key={id || name + index}
+                label={name}
+                disabled={isFetching || typeof id === "undefined"}
+                onDelete={() => this.removeItem({name, id})}
+              />
+            ))}
+          </ul>
+          <button ref={this.addItemButton} onClick={this.switchModal}
+                  className={"btn primary add-item"}>
+            Add item
+          </button>
+          {error && <strong>{error}</strong>}
+          {isEditing && (
+            <AddItem onCancel={this.switchModal} onSubmit={this.addItem}/>
+          )}
+        </div>
       </div>
     );
   }

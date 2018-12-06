@@ -3,7 +3,8 @@
   --light-gray: #F5F5F5;
   --gray: #939090;
   --black: #000;
-  --cyan: #00ABFF;
+  --blue: #00ABFF;
+  --dark-blue: #0291d2;
 }
 
 * {
@@ -27,4 +28,40 @@ body {
 
 h1 {
   font-size: 2.5rem;
+}
+
+button {
+  border: 0;
+  outline: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.btn {
+  font-size: 1rem;
+  border-radius: 3px;
+  padding: 15px;
+}
+
+.btn.primary {
+  background-color: var(--blue);
+  color: white;
+  border: 1px solid var(--dark-blue);
+  transition: .05s ease all;
+}
+
+.btn.primary:active {
+  background-color: var(--dark-blue);
+}
+
+.btn.primary:disabled {
+  background-color: var(--gray);
+  color: var(--white);
+  border: 1px solid transparent;
+}
+
+.btn.secondary {
+  border: 1px solid darkgray;
 }
