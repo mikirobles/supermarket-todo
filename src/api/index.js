@@ -8,7 +8,7 @@ const initialItems = [
     name: "Eggs",
   },
 ];
-const responseDelay = 1200;
+const responseDelay = 300;
 let items;
 let idCount;
 
@@ -22,7 +22,7 @@ const getIdCount = (items) => {
 };
 
 const initialize = () => {
-  items = localStorage.getItem('items');
+  items = localStorage.getItem("items");
   if (!items) {
     items = initialItems;
   } else {
@@ -59,7 +59,7 @@ const api = {
     return items;
   },
   persistItems: () => {
-    localStorage.setItem('items', JSON.stringify(items));
+    localStorage.setItem("items", JSON.stringify(items));
   }
 };
 

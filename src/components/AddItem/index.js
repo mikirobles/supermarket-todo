@@ -5,14 +5,9 @@ import "./AddItem.css";
 class AddItem extends React.Component {
   constructor(props) {
     super(props);
-    this.inputRef = React.createRef();
     this.state = {
       inputValue: ""
     };
-  }
-
-  componentDidMount() {
-    this.inputRef.current.focus();
   }
 
   onSubmit = e => {
@@ -34,10 +29,10 @@ class AddItem extends React.Component {
     return (
       <div className={"modal"}>
         <div className="modal-container">
-          <form onSubmit={this.handleSubmit}>
+          <form onSubmit={this.onSubmit}>
             <h3>Add item</h3>
             <input
-              ref={this.inputRef}
+              autoFocus
               value={inputValue}
               onChange={this.onChange}
               type="text"
@@ -48,7 +43,6 @@ class AddItem extends React.Component {
               </button>
               <button
                 type="submit"
-                onClick={this.onSubmit}
                 disabled={inputValue.length === 0}
                 className={"btn primary"}
               >

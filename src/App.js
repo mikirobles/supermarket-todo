@@ -1,48 +1,35 @@
-import React, { Component } from "react";
+import React from "react";
 import api from "./api";
 import "./App.css";
 import ListItem from "./components/ListItem";
 import AddItem from "./components/AddItem";
 
-class App extends Component {
-  constructor() {
-    super();
-    this.fetchQueue = [];
-    this.addItemButton = React.createRef();
-    this.state = {
-      isEditing: false,
-      initialLoad: false,
-      error: null,
-      items: []
-    };
-  }
-
-  componentWillMount() {
-    this.fetchItems();
-  }
+class App extends React.Component {
+  state = {
+    isEditing: false,
+    initialLoad: true,
+    error: null,
+    items: []
+  };
+  
 
   componentDidMount() {
-    this.addItemButton.current.focus();
+    this.fetchItems();
   }
 
   fetchItems = async () => {
     try {
-      this.setState({
-        initialLoad: true
-      });
       const items = await api.fetchItems();
       this.setState({
-        items
+        items,
+        initialLoad: false
       });
     } catch (e) {
-      console.error(e);
       this.setState({
-        error: "An error has occurred while fetching the items."
+        error: "An error has occurred while fetching the items.",
+        initialLoad: false
       });
     }
-    this.setState({
-      initialLoad: false
-    });
   };
 
   switchModal = () => {
@@ -51,27 +38,22 @@ class App extends Component {
     }));
   };
 
-  addItem = async newItem => {
+  addItem = async item => {
     const { items } = this.state;
     try {
       this.setState({
-        items: [...items, newItem],
+        items: [...items, item],
         isEditing: false
       });
-      this.fetchQueue.push("add item");
-      const newItems = await api.addItem(newItem);
-      if (this.fetchQueue.length === 1) {
-        this.setState({
-          items: newItems
-        });
-      }
+      const newItems = await api.addItem(item);
+      this.setState({
+        items: newItems
+      });
     } catch (e) {
-      console.error(e);
       this.setState({
         items
       });
     }
-    this.fetchQueue.pop();
   };
 
   removeItem = async item => {
@@ -83,20 +65,12 @@ class App extends Component {
       this.setState({
         items: [...items].filter(({ id }) => id !== item.id)
       });
-      this.fetchQueue.push("remove item");
-      const newItems = await api.removeItem(item);
-      if (this.fetchQueue.length === 1) {
-        this.setState({
-          items: newItems
-        });
-      }
+      api.removeItem(item);
     } catch (e) {
-      console.error(e);
       this.setState({
         items
       });
     }
-    this.fetchQueue.pop();
   };
 
   render() {
@@ -123,7 +97,7 @@ class App extends Component {
             ))}
           </ul>
           <button
-            ref={this.addItemButton}
+            autoFocus
             onClick={this.switchModal}
             className={"btn primary add-item"}
           >
