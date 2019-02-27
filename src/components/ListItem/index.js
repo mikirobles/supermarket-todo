@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import "./ListItem.css";
 import Trash from "../../trash.svg";
 
@@ -10,5 +11,15 @@ const ListItem = ({label, onDelete, disabled}) => (
     </button>
   </li>
 );
+
+ListItem.propTypes = {
+  label: PropTypes.string.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  disabled: PropTypes.bool
+};
+
+ListItem.defaultProps = {
+  disabled: true
+};
 
 export default ListItem;
